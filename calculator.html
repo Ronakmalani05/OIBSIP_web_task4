@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AXIOM PRIME — Luxury Cyberpunk Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --gold:#FFD700; --gold-mid:#C9A84C; --gold-dk:#7A5C1E; --gold-sh:#FFF0A0;
+  --pur:#0D0518; --blue:#00CFFF; --silv:#E8EFF8; --wh:#F0F4FF;
+  --red:#FF3366; --grn:#00FF9D;
+  --btn-h:clamp(52px,7vw,68px); --cw:min(98vw,500px);
+}
+html,body {
+  min-height:100vh; width:100%;
+  background:radial-gradient(ellipse at 30% 40%,#1a0838 0%,#050210 50%,#020108 100%);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Rajdhani',sans-serif; overflow-x:hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image:linear-gradient(rgba(0,207,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,207,255,.025) 1px,transparent 1px);
+  background-size:36px 36px; animation:gridDrift 25s linear infinite; pointer-events:none; z-index:0;
+}
+@keyframes gridDrift{from{background-position:0 0}to{background-position:36px 36px}}
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:radial-gradient(ellipse 55% 40% at 10% 50%,rgba(0,207,255,.07) 0%,transparent 70%),
+    radial-gradient(ellipse 45% 55% at 90% 25%,rgba(155,48,255,.08) 0%,transparent 70%),
+    radial-gradient(ellipse 35% 25% at 50% 95%,rgba(255,215,0,.05) 0%,transparent 60%);
+  animation:ambPulse 10s ease-in-out infinite alternate;
+}
+@keyframes ambPulse{0%{opacity:.5}100%{opacity:1}}
+.particles{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+.p{position:absolute;width:2px;height:2px;border-radius:50%;animation:floatUp linear infinite;}
+@keyframes floatUp{0%{transform:translateY(110vh) translateX(0);opacity:0}5%{opacity:1}95%{opacity:.7}100%{transform:translateY(-50px) translateX(60px);opacity:0}}
+
+.page-wrapper{position:relative;z-index:10;padding:12px;width:100%;display:flex;justify-content:center;}
+
+/* ── FRAME ── */
+.frame{
+  width:var(--cw); padding:3px; border-radius:20px;
+  background:linear-gradient(135deg,#FFD700 0%,#7A5C1E 15%,#C9A84C 30%,#FFF0A0 48%,#C9A84C 65%,#7A5C1E 82%,#FFD700 100%);
+  box-shadow:0 0 0 1px rgba(0,0,0,.85),0 0 50px rgba(255,215,0,.2),0 0 100px rgba(155,48,255,.12),0 40px 100px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,240,160,.4);
+  animation:frameIn .9s cubic-bezier(.16,1,.3,1) both; position:relative;
+}
+@keyframes frameIn{from{opacity:0;transform:translateY(60px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.frame::before,.frame::after{content:'';position:absolute;width:28px;height:28px;z-index:20;}
+.frame::before{top:6px;left:6px;border-top:2px solid rgba(255,240,160,.6);border-left:2px solid rgba(255,240,160,.6);}
+.frame::after {bottom:6px;right:6px;border-bottom:2px solid rgba(255,240,160,.6);border-right:2px solid rgba(255,240,160,.6);}
+.frame-inner{border-radius:18px;padding:2px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(0,0,0,.45));box-shadow:inset 0 2px 4px rgba(255,240,160,.12),inset 0 -2px 4px rgba(0,0,0,.5);}
+
+/* ── CALC BODY ── */
+.calculator{border-radius:17px;overflow:hidden;background:linear-gradient(170deg,#140824 0%,#0D0518 42%,#07020F 100%);position:relative;}
+.calculator::after{content:'';position:absolute;top:-100%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,207,255,.35),transparent);animation:scanLine 5s linear infinite;z-index:50;pointer-events:none;}
+@keyframes scanLine{0%{top:-2px}100%{top:100%}}
+
+/* ── BRAND STRIP ── */
+.brand-strip{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 9px;background:linear-gradient(90deg,rgba(255,215,0,.07),rgba(0,207,255,.05),rgba(255,215,0,.07));border-bottom:1px solid rgba(255,215,0,.12);position:relative;}
+.brand-strip::after{content:'';position:absolute;bottom:-1px;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5;}
+.brand-name{font-family:'Cinzel',serif;font-size:clamp(11px,2vw,14px);font-weight:900;letter-spacing:5px;background:linear-gradient(90deg,var(--gold-dk),var(--gold),var(--gold-sh),var(--gold),var(--gold-dk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 6px rgba(255,215,0,.45));}
+.brand-series{font-size:9px;letter-spacing:3px;color:rgba(0,207,255,.5);font-weight:600;}
+.brand-right{display:flex;align-items:center;gap:10px;}
+.status-row{display:flex;gap:5px;align-items:center;}
+.status-gem{width:8px;height:8px;border-radius:50%;position:relative;box-shadow:0 0 6px currentColor;}
+.status-gem::after{content:'';position:absolute;top:1px;left:2px;width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.6);}
+.gem-1{background:radial-gradient(circle at 35% 35%,#80FFB0,#00A050);color:#00FF80;animation:gemPulse 2s ease-in-out infinite;}
+.gem-2{background:radial-gradient(circle at 35% 35%,#A080FF,#5010C0);color:#8040FF;animation:gemPulse 2s ease-in-out infinite .5s;}
+.gem-3{background:radial-gradient(circle at 35% 35%,#FFD060,#B07000);color:#FFB000;animation:gemPulse 2s ease-in-out infinite 1s;}
+@keyframes gemPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+
+/* ── 3-DOT MENU BUTTON ── */
+.menu-btn{
+  display:flex;flex-direction:column;gap:3.5px;cursor:pointer;padding:5px 4px;
+  border:none;background:transparent;border-radius:6px;transition:all .2s;position:relative;z-index:200;
+}
+.menu-btn span{display:block;width:4px;height:4px;border-radius:50%;background:var(--gold-mid);box-shadow:0 0 4px rgba(255,215,0,.4);transition:all .2s;}
+.menu-btn:hover span{background:var(--gold);box-shadow:0 0 8px rgba(255,215,0,.8);}
+.menu-btn.open span{background:var(--blue);box-shadow:0 0 8px rgba(0,207,255,.8);}
+
+/* ── DROPDOWN MENU ── */
+.dropdown{
+  position:absolute;top:42px;right:14px;width:200px;
+  background:linear-gradient(145deg,#140828,#0A0418,#05020F);
+  border:1px solid rgba(255,215,0,.25);border-radius:12px;
+  box-shadow:0 8px 40px rgba(0,0,0,.8),0 0 20px rgba(255,215,0,.1),0 0 40px rgba(0,207,255,.08);
+  z-index:300;overflow:hidden;
+  opacity:0;transform:translateY(-10px) scale(.95);pointer-events:none;
+  transition:all .22s cubic-bezier(.16,1,.3,1);
+}
+.dropdown.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+.dropdown-header{padding:10px 14px 8px;border-bottom:1px solid rgba(255,215,0,.1);font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;color:rgba(255,215,0,.4);}
+.menu-item{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;
+  border:none;background:transparent;width:100%;text-align:left;
+  font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;
+  color:rgba(232,239,248,.6);transition:all .15s;border-bottom:1px solid rgba(255,255,255,.03);
+}
+.menu-item:last-child{border-bottom:none;}
+.menu-item:hover{background:rgba(255,215,0,.07);color:var(--gold);}
+.menu-item .mi-icon{font-size:15px;width:20px;text-align:center;}
+.menu-item .mi-badge{margin-left:auto;font-size:9px;padding:2px 6px;border-radius:10px;background:rgba(0,207,255,.15);color:var(--blue);border:1px solid rgba(0,207,255,.2);}
+
+/* ── OVERLAY PANEL (shared) ── */
+.panel-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.panel-overlay.open{opacity:1;pointer-events:all;}
+.panel{
+  width:min(96vw,440px);max-height:85vh;
+  background:linear-gradient(145deg,#140828,#0A0418,#08020F);
+  border:1px solid rgba(255,215,0,.22);border-radius:16px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.5),0 20px 60px rgba(0,0,0,.9),0 0 40px rgba(255,215,0,.08);
+  overflow:hidden;display:flex;flex-direction:column;
+  transform:translateY(30px) scale(.96);transition:transform .28s cubic-bezier(.16,1,.3,1);
+}
+.panel-overlay.open .panel{transform:translateY(0) scale(1);}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid rgba(255,215,0,.1);flex-shrink:0;
+  background:linear-gradient(90deg,rgba(255,215,0,.06),rgba(0,207,255,.04));
+}
+.panel-title{font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:4px;background:linear-gradient(90deg,var(--gold-dk),var(--gold),var(--gold-sh));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.panel-close{border:none;background:rgba(255,51,102,.1);color:var(--red);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,51,102,.2);transition:all .15s;}
+.panel-close:hover{background:rgba(255,51,102,.25);box-shadow:0 0 12px rgba(255,51,102,.3);}
+.panel-body{overflow-y:auto;flex:1;padding:16px 18px;}
+.panel-body::-webkit-scrollbar{width:4px;}
+.panel-body::-webkit-scrollbar-track{background:rgba(255,255,255,.03);}
+.panel-body::-webkit-scrollbar-thumb{background:rgba(255,215,0,.25);border-radius:4px;}
+
+/* ── HISTORY PANEL ── */
+.hist-item{
+  padding:10px 12px;margin-bottom:8px;border-radius:8px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,215,0,.08);
+  font-size:13px;color:rgba(232,239,248,.7);letter-spacing:.5px;
+  display:flex;justify-content:space-between;align-items:center;
+  transition:all .15s;cursor:pointer;
+}
+.hist-item:hover{background:rgba(255,215,0,.07);border-color:rgba(255,215,0,.2);color:var(--gold);}
+.hist-item .h-eq{color:var(--gold);font-family:'Cinzel',serif;font-weight:700;font-size:14px;}
+.hist-item .h-copy{font-size:10px;color:rgba(0,207,255,.4);letter-spacing:1px;}
+.hist-item:hover .h-copy{color:var(--blue);}
+.hist-empty{text-align:center;padding:30px 0;color:rgba(255,215,0,.25);font-size:12px;letter-spacing:2px;}
+.hist-clear-btn{width:100%;margin-top:10px;padding:8px;border:1px solid rgba(255,51,102,.2);background:rgba(255,51,102,.06);color:var(--red);border-radius:8px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;transition:all .15s;}
+.hist-clear-btn:hover{background:rgba(255,51,102,.15);border-color:rgba(255,51,102,.4);}
+
+/* ── HELP PANEL ── */
+.help-section{margin-bottom:18px;}
+.help-section-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:var(--gold-mid);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,215,0,.1);}
+.help-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.025);}
+.help-key{background:linear-gradient(145deg,#1E1035,#0E0620);border:1px solid rgba(255,215,0,.2);border-radius:5px;padding:2px 8px;font-family:'Cinzel',serif;font-size:10px;color:var(--gold-mid);white-space:nowrap;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,240,160,.08);}
+.help-desc{font-size:12px;color:rgba(232,239,248,.6);letter-spacing:.3px;line-height:1.5;}
+
+/* ── TIPS PANEL ── */
+.tip-card{margin-bottom:12px;border-radius:10px;overflow:hidden;}
+.tip-card-head{padding:8px 12px;display:flex;align-items:center;gap:8px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;}
+.tip-card-body{padding:10px 12px;font-size:12px;color:rgba(232,239,248,.65);line-height:1.6;letter-spacing:.3px;}
+.tip-gold .tip-card-head{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.15);border-bottom:none;}
+.tip-gold .tip-card-body{background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.1);border-top:none;}
+.tip-blue .tip-card-head{background:rgba(0,207,255,.1);color:var(--blue);border:1px solid rgba(0,207,255,.15);border-bottom:none;}
+.tip-blue .tip-card-body{background:rgba(0,207,255,.03);border:1px solid rgba(0,207,255,.1);border-top:none;}
+.tip-grn .tip-card-head{background:rgba(0,255,157,.08);color:var(--grn);border:1px solid rgba(0,255,157,.12);border-bottom:none;}
+.tip-grn .tip-card-body{background:rgba(0,255,157,.02);border:1px solid rgba(0,255,157,.08);border-top:none;}
+.tip-red .tip-card-head{background:rgba(255,51,102,.08);color:var(--red);border:1px solid rgba(255,51,102,.12);border-bottom:none;}
+.tip-red .tip-card-body{background:rgba(255,51,102,.02);border:1px solid rgba(255,51,102,.08);border-top:none;}
+
+/* ── SUGGEST PANEL ── */
+.suggest-card{margin-bottom:10px;padding:12px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,215,0,.08);transition:all .15s;cursor:default;}
+.suggest-card:hover{background:rgba(255,215,0,.05);border-color:rgba(255,215,0,.18);}
+.suggest-tag{font-size:9px;letter-spacing:2px;color:var(--blue);margin-bottom:5px;}
+.suggest-text{font-size:13px;color:rgba(232,239,248,.75);line-height:1.5;}
+.suggest-val{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);margin-top:4px;cursor:pointer;display:inline-block;padding:2px 8px;border-radius:5px;border:1px solid rgba(255,215,0,.15);background:rgba(255,215,0,.07);}
+.suggest-val:hover{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.35);}
+
+/* ── ABOUT PANEL ── */
+.about-logo{text-align:center;padding:20px 0 16px;}
+.about-logo-text{font-family:'Cinzel',serif;font-size:28px;font-weight:900;letter-spacing:8px;background:linear-gradient(90deg,var(--gold-dk),var(--gold),var(--gold-sh),var(--gold),var(--gold-dk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 12px rgba(255,215,0,.5));}
+.about-sub{font-size:10px;letter-spacing:4px;color:rgba(0,207,255,.5);text-align:center;margin-top:4px;}
+.about-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.3),transparent);margin:16px 0;}
+.about-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;}
+.about-row:last-child{border-bottom:none;}
+.about-label{color:rgba(255,215,0,.4);letter-spacing:1px;}
+.about-val{color:rgba(232,239,248,.7);}
+.about-feat{margin-top:14px;}
+.feat-pill{display:inline-block;margin:3px;padding:3px 10px;border-radius:20px;font-size:10px;letter-spacing:1.5px;background:rgba(0,207,255,.08);color:var(--blue);border:1px solid rgba(0,207,255,.18);}
+
+/* ── SOUND TOGGLE ── */
+.sound-toggle{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;color:rgba(232,239,248,.6);transition:all .15s;border-bottom:1px solid rgba(255,255,255,.03);}
+.sound-toggle:hover{background:rgba(255,215,0,.07);color:var(--gold);}
+.toggle-pill{width:36px;height:20px;border-radius:10px;background:rgba(255,51,102,.2);border:1px solid rgba(255,51,102,.3);position:relative;transition:all .25s;margin-left:auto;flex-shrink:0;}
+.toggle-pill.on{background:rgba(0,255,157,.2);border-color:rgba(0,255,157,.4);}
+.toggle-pill::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#FF3366;transition:all .25s;}
+.toggle-pill.on::after{left:18px;background:var(--grn);box-shadow:0 0 6px var(--grn);}
+
+/* ── DISPLAY ── */
+.display-shell{margin:14px 16px 0;border-radius:12px;background:linear-gradient(145deg,#02000A,#050115,#02000A);border:1px solid rgba(255,215,0,.16);box-shadow:inset 0 5px 20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,240,160,.06),0 0 0 1px rgba(0,0,0,.5);overflow:hidden;position:relative;}
+.display-shell::before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(0,207,255,.013) 3px,rgba(0,207,255,.013) 4px);}
+.display-shell::after{content:'';position:absolute;top:0;left:-100%;right:0;bottom:0;z-index:3;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);animation:glossSweep 7s ease-in-out infinite;}
+@keyframes glossSweep{0%{left:-100%}40%,100%{left:120%}}
+.display-inner{padding:16px 18px 12px;position:relative;z-index:4;}
+.display-top-row{display:flex;justify-content:space-between;margin-bottom:6px;}
+.display-tag{font-size:8px;letter-spacing:3px;color:rgba(255,215,0,.3);font-weight:700;}
+.display-mode-lbl{font-size:8px;letter-spacing:2px;color:rgba(0,207,255,.35);}
+.history-line{min-height:16px;text-align:right;font-size:11px;color:rgba(0,207,255,.35);letter-spacing:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;font-weight:300;}
+.expr-line{min-height:20px;text-align:right;font-size:13px;color:rgba(0,207,255,.5);letter-spacing:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px;}
+.main-value{text-align:right;font-family:'Cinzel',serif;font-size:clamp(32px,7vw,50px);font-weight:700;letter-spacing:2px;min-height:clamp(48px,8vw,68px);display:flex;align-items:center;justify-content:flex-end;overflow:hidden;background:linear-gradient(180deg,var(--gold-sh) 0%,var(--gold) 40%,var(--gold-mid) 80%,var(--gold-dk) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 14px rgba(255,215,0,.3));transition:font-size .2s;}
+.main-value.long{font-size:clamp(22px,5vw,34px);}
+.main-value.very-long{font-size:clamp(14px,3.5vw,22px);}
+.cursor-blink{display:inline-block;width:2px;height:.75em;background:var(--gold);margin-left:3px;vertical-align:middle;animation:cursorBlink 1.1s step-end infinite;box-shadow:0 0 6px var(--gold);border-radius:1px;flex-shrink:0;}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+.display-bottom-trim{display:flex;justify-content:space-between;padding:6px 18px;background:linear-gradient(90deg,rgba(255,215,0,.04),rgba(0,207,255,.04));border-top:1px solid rgba(255,215,0,.07);}
+.trim-txt{font-size:8px;letter-spacing:2px;color:rgba(192,200,216,.22);}
+
+/* ── MODE TABS ── */
+.mode-tabs{display:flex;gap:6px;padding:10px 16px 6px;}
+.mode-tab{flex:1;padding:5px 0;border:none;border-radius:6px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;transition:all .2s;}
+.mode-tab.std{background:rgba(255,215,0,.08);color:rgba(255,215,0,.5);border:1px solid rgba(255,215,0,.15);}
+.mode-tab.sci{background:rgba(0,207,255,.06);color:rgba(0,207,255,.4);border:1px solid rgba(0,207,255,.12);}
+.mode-tab.active.std{background:rgba(255,215,0,.18);color:var(--gold);border-color:rgba(255,215,0,.5);box-shadow:0 0 12px rgba(255,215,0,.15);}
+.mode-tab.active.sci{background:rgba(0,207,255,.15);color:var(--blue);border-color:rgba(0,207,255,.4);box-shadow:0 0 12px rgba(0,207,255,.15);}
+
+/* ── DIVIDER ── */
+.divider{margin:8px 16px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.25),rgba(0,207,255,.2),rgba(255,215,0,.25),transparent);position:relative;}
+.divider::before{content:'◆';position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--gold-mid);filter:drop-shadow(0 0 4px rgba(255,215,0,.5));}
+
+/* ── BUTTONS ── */
+.buttons{display:grid;gap:clamp(5px,1.2vw,8px);padding:4px 14px 14px;}
+.buttons.mode-standard{grid-template-columns:repeat(4,1fr);}
+.buttons.mode-scientific{grid-template-columns:repeat(5,1fr);}
+.btn{position:relative;height:var(--btn-h);border:none;border-radius:10px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(13px,2.2vw,17px);letter-spacing:.5px;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:transform .12s,box-shadow .15s,filter .12s;user-select:none;-webkit-tap-highlight-color:transparent;animation:btnIn .45s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes btnIn{from{opacity:0;transform:scale(.7) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.btn:nth-child(1){animation-delay:.04s}.btn:nth-child(2){animation-delay:.07s}.btn:nth-child(3){animation-delay:.10s}.btn:nth-child(4){animation-delay:.13s}.btn:nth-child(5){animation-delay:.16s}.btn:nth-child(6){animation-delay:.19s}.btn:nth-child(7){animation-delay:.22s}.btn:nth-child(8){animation-delay:.25s}.btn:nth-child(9){animation-delay:.28s}.btn:nth-child(10){animation-delay:.31s}.btn:nth-child(11){animation-delay:.34s}.btn:nth-child(12){animation-delay:.37s}.btn:nth-child(13){animation-delay:.40s}.btn:nth-child(14){animation-delay:.43s}.btn:nth-child(15){animation-delay:.46s}.btn:nth-child(16){animation-delay:.49s}.btn:nth-child(17){animation-delay:.52s}.btn:nth-child(18){animation-delay:.55s}.btn:nth-child(19){animation-delay:.58s}.btn:nth-child(20){animation-delay:.61s}.btn:nth-child(21){animation-delay:.64s}.btn:nth-child(22){animation-delay:.67s}.btn:nth-child(23){animation-delay:.70s}.btn:nth-child(24){animation-delay:.73s}.btn:nth-child(25){animation-delay:.76s}
+.btn::before{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.1),transparent);border-radius:10px 10px 0 0;pointer-events:none;z-index:2;}
+.btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(0deg,rgba(0,0,0,.4),transparent);border-radius:0 0 10px 10px;pointer-events:none;z-index:2;}
+.ripple{position:absolute;inset:0;border-radius:inherit;z-index:3;background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),rgba(255,255,255,.22),transparent 65%);opacity:0;transition:opacity .25s;}
+.btn:active .ripple{opacity:1;}
+.btn span{position:relative;z-index:4;line-height:1;}
+.btn-num{background:linear-gradient(155deg,#1E1035,#150A28,#0E0620);color:var(--silv);border:1px solid rgba(255,215,0,.12);box-shadow:0 4px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,240,160,.08),inset 0 -2px 0 rgba(0,0,0,.4);}
+.btn-num:hover{background:linear-gradient(155deg,#2A1848,#1C0E36,#130828);border-color:rgba(255,215,0,.3);color:var(--wh);transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.55),0 0 14px rgba(255,215,0,.1);}
+.btn-op{background:linear-gradient(155deg,#280850,#1A0440,#100230);color:var(--blue);border:1px solid rgba(0,207,255,.2);box-shadow:0 4px 10px rgba(0,0,0,.55),0 0 12px rgba(0,207,255,.08),inset 0 1px 0 rgba(0,207,255,.1);text-shadow:0 0 10px rgba(0,207,255,.6);font-size:clamp(15px,2.5vw,21px);}
+.btn-op:hover{background:linear-gradient(155deg,#360C6A,#240858,#180440);border-color:rgba(0,207,255,.5);transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.55),0 0 22px rgba(0,207,255,.25);}
+.btn-spec{background:linear-gradient(155deg,#1A1200,#120D00,#0A0800);color:var(--gold-mid);border:1px solid rgba(255,215,0,.18);box-shadow:0 4px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,240,160,.1);font-size:clamp(11px,1.8vw,14px);letter-spacing:1px;}
+.btn-spec:hover{background:linear-gradient(155deg,#2A1E00,#1E1600,#120E00);color:var(--gold);border-color:rgba(255,215,0,.45);transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.55),0 0 18px rgba(255,215,0,.18);}
+.btn-sci{background:linear-gradient(155deg,#001220,#000D18,#000810);color:rgba(0,207,255,.7);border:1px solid rgba(0,207,255,.14);box-shadow:0 4px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,207,255,.08);font-size:clamp(10px,1.6vw,13px);letter-spacing:.5px;}
+.btn-sci:hover{background:linear-gradient(155deg,#002038,#001830,#001025);color:var(--blue);border-color:rgba(0,207,255,.38);transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.55),0 0 16px rgba(0,207,255,.18);}
+.btn-clear{background:linear-gradient(155deg,#280008,#1A0005,#100003);color:var(--red);border:1px solid rgba(255,51,102,.22);box-shadow:0 4px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,100,130,.1);font-size:clamp(11px,1.8vw,14px);letter-spacing:1px;}
+.btn-clear:hover{background:linear-gradient(155deg,#3D000D,#280008,#180005);border-color:rgba(255,51,102,.5);transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.55),0 0 20px rgba(255,51,102,.25);text-shadow:0 0 14px rgba(255,51,102,.9);}
+.btn-eq{background:linear-gradient(155deg,#3D2800 0%,#8A5A00 20%,#C9920A 40%,#FFD700 60%,#C9920A 80%,#3D2800 100%);color:var(--pur);border:1px solid rgba(255,215,0,.5);box-shadow:0 4px 16px rgba(0,0,0,.7),0 0 22px rgba(255,215,0,.28),0 0 44px rgba(255,215,0,.12),inset 0 2px 0 rgba(255,240,160,.4),inset 0 -2px 0 rgba(100,70,0,.6);font-family:'Cinzel',serif;font-size:clamp(20px,3.5vw,26px);font-weight:900;}
+.btn-eq:hover{background:linear-gradient(155deg,#5A3A00,#AA7200,#E8AA20,#FFE040,#E8AA20,#5A3A00);transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.75),0 0 35px rgba(255,215,0,.45),0 0 70px rgba(255,215,0,.22);}
+.btn-back{background:linear-gradient(155deg,#20080A,#160506,#0C0204);color:#FF8080;border:1px solid rgba(255,128,128,.2);box-shadow:0 4px 10px rgba(0,0,0,.55);font-size:clamp(14px,2.5vw,19px);}
+.btn-back:hover{background:linear-gradient(155deg,#300C10,#200808,#140405);border-color:rgba(255,128,128,.45);transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.55),0 0 16px rgba(255,128,128,.2);}
+.btn:active{transform:translateY(2px) scale(.97)!important;filter:brightness(1.35);transition:transform .06s,filter .06s;}
+
+/* ── FOOTER ── */
+.calc-footer{display:flex;justify-content:space-between;align-items:center;padding:8px 18px 10px;border-top:1px solid rgba(255,215,0,.07);background:linear-gradient(90deg,rgba(255,215,0,.03),transparent,rgba(0,207,255,.03));}
+.footer-l{font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;color:rgba(255,215,0,.2);}
+.footer-r{font-size:8px;letter-spacing:2px;color:rgba(0,207,255,.2);}
+
+/* ── ANIMATIONS ── */
+@keyframes errFlash{0%,100%{filter:none}20%,60%{filter:drop-shadow(0 0 24px rgba(255,51,102,.95))}}
+@keyframes resultGlow{0%{filter:drop-shadow(0 0 10px rgba(255,215,0,.3))}35%{filter:drop-shadow(0 0 35px rgba(255,215,0,1)) drop-shadow(0 0 70px rgba(255,215,0,.55))}100%{filter:drop-shadow(0 0 14px rgba(255,215,0,.3))}}
+.anim-err{animation:errFlash .5s ease 3;}
+.anim-result{animation:resultGlow .65s ease;}
+
+/* Toast notification */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(60px);background:linear-gradient(135deg,#1A0830,#0D0518);border:1px solid rgba(0,207,255,.3);color:var(--blue);padding:10px 22px;border-radius:30px;font-size:12px;letter-spacing:2px;box-shadow:0 0 20px rgba(0,207,255,.2);z-index:9999;opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:400px){:root{--btn-h:50px;}.brand-name{font-size:11px;letter-spacing:3px;}}
+@media(max-width:340px){:root{--btn-h:46px;--cw:98vw;}.buttons{gap:5px;padding:4px 10px 12px;}}
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+<div class="toast" id="toast"></div>
+
+<div class="page-wrapper">
+<div class="frame">
+<div class="frame-inner">
+<div class="calculator">
+
+  <!-- Brand Strip -->
+  <div class="brand-strip">
+    <span class="brand-name">AXIOM</span>
+    <div class="brand-right">
+      <div class="status-row">
+        <div class="status-gem gem-1"></div>
+        <div class="status-gem gem-2"></div>
+        <div class="status-gem gem-3"></div>
+      </div>
+      <!-- 3-DOT MENU -->
+      <div style="position:relative;">
+        <button class="menu-btn" id="menuBtn" onclick="toggleMenu()">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="dropdown" id="dropdown">
+          <div class="dropdown-header">◈ AXIOM MENU</div>
+          <button class="menu-item" onclick="openPanel('history')"><span class="mi-icon">📋</span> HISTORY <span class="mi-badge" id="histBadge">0</span></button>
+          <button class="menu-item" onclick="openPanel('help')"><span class="mi-icon">❓</span> HELP & SHORTCUTS</button>
+          <button class="menu-item" onclick="openPanel('tips')"><span class="mi-icon">⚡</span> PRO TIPS & TRICKS</button>
+          <button class="menu-item" onclick="openPanel('suggest')"><span class="mi-icon">💡</span> SMART SUGGESTIONS</button>
+          <button class="menu-item" onclick="openPanel('about')"><span class="mi-icon">✦</span> ABOUT AXIOM</button>
+          <button class="sound-toggle" id="soundToggleBtn" onclick="toggleSound()">
+            <span class="mi-icon">🔊</span> SOUND
+            <div class="toggle-pill on" id="soundPill"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Display -->
+  <div class="display-shell">
+    <div class="display-inner">
+      <div class="display-top-row">
+        <span class="display-tag">◈ OUTPUT</span>
+        <span class="display-mode-lbl">PRECISION MODE</span>
+      </div>
+      <div class="history-line" id="histLine">&nbsp;</div>
+      <div class="expr-line"    id="exprLine">&nbsp;</div>
+      <div class="main-value"   id="mainVal">
+        <span id="valText">0</span>
+        <span class="cursor-blink"></span>
+      </div>
+    </div>
+    <div class="display-bottom-trim">
+      <span class="trim-txt">AXIOM SYSTEMS</span>
+      <span class="trim-txt" id="modeLabel">STD</span>
+    </div>
+  </div>
+
+  <!-- Mode Tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab std active" id="tabStd" onclick="switchMode('std')">STANDARD</button>
+    <button class="mode-tab sci"        id="tabSci" onclick="switchMode('sci')">SCIENTIFIC</button>
+  </div>
+  <div class="divider"></div>
+
+  <!-- STANDARD BUTTONS -->
+  <div class="buttons mode-standard" id="stdButtons">
+    <button class="btn btn-clear" data-a="clear"><div class="ripple"></div><span>CLR</span></button>
+    <button class="btn btn-back"  data-a="back" ><div class="ripple"></div><span>⌫</span></button>
+    <button class="btn btn-spec"  data-a="pct"  ><div class="ripple"></div><span>%</span></button>
+    <button class="btn btn-op"    data-a="op" data-v="÷"><div class="ripple"></div><span>÷</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="7"><div class="ripple"></div><span>7</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="8"><div class="ripple"></div><span>8</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="9"><div class="ripple"></div><span>9</span></button>
+    <button class="btn btn-op"    data-a="op" data-v="×"><div class="ripple"></div><span>×</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="4"><div class="ripple"></div><span>4</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="5"><div class="ripple"></div><span>5</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="6"><div class="ripple"></div><span>6</span></button>
+    <button class="btn btn-op"    data-a="op" data-v="−"><div class="ripple"></div><span>−</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="1"><div class="ripple"></div><span>1</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="2"><div class="ripple"></div><span>2</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="3"><div class="ripple"></div><span>3</span></button>
+    <button class="btn btn-op"    data-a="op" data-v="+"><div class="ripple"></div><span>+</span></button>
+    <button class="btn btn-spec"  data-a="sign"><div class="ripple"></div><span>+/−</span></button>
+    <button class="btn btn-num"   data-a="n"  data-v="0"><div class="ripple"></div><span>0</span></button>
+    <button class="btn btn-spec"  data-a="dot"><div class="ripple"></div><span>.</span></button>
+    <button class="btn btn-eq"    data-a="eq"><div class="ripple"></div><span>=</span></button>
+  </div>
+
+  <!-- SCIENTIFIC BUTTONS -->
+  <div class="buttons mode-scientific" id="sciButtons" style="display:none">
+    <button class="btn btn-sci" data-a="sci" data-v="sin"><div class="ripple"></div><span>SIN</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="cos"><div class="ripple"></div><span>COS</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="tan"><div class="ripple"></div><span>TAN</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="log"><div class="ripple"></div><span>LOG</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="ln" ><div class="ripple"></div><span>LN</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="sqrt"><div class="ripple"></div><span>√</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="sq"  ><div class="ripple"></div><span>x²</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="cube"><div class="ripple"></div><span>x³</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="inv" ><div class="ripple"></div><span>1/x</span></button>
+    <button class="btn btn-sci" data-a="sci" data-v="pi"  ><div class="ripple"></div><span>π</span></button>
+    <button class="btn btn-clear"  data-a="clear"><div class="ripple"></div><span>CLR</span></button>
+    <button class="btn btn-back"   data-a="back" ><div class="ripple"></div><span>⌫</span></button>
+    <button class="btn btn-spec"   data-a="pct"  ><div class="ripple"></div><span>%</span></button>
+    <button class="btn btn-op"     data-a="op" data-v="^"><div class="ripple"></div><span>xʸ</span></button>
+    <button class="btn btn-op"     data-a="op" data-v="÷"><div class="ripple"></div><span>÷</span></button>
+    <button class="btn btn-sci"    data-a="sci" data-v="abs"><div class="ripple"></div><span>|x|</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="7"><div class="ripple"></div><span>7</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="8"><div class="ripple"></div><span>8</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="9"><div class="ripple"></div><span>9</span></button>
+    <button class="btn btn-op"     data-a="op" data-v="×"><div class="ripple"></div><span>×</span></button>
+    <button class="btn btn-sci"    data-a="sci" data-v="fact"><div class="ripple"></div><span>n!</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="4"><div class="ripple"></div><span>4</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="5"><div class="ripple"></div><span>5</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="6"><div class="ripple"></div><span>6</span></button>
+    <button class="btn btn-op"     data-a="op" data-v="−"><div class="ripple"></div><span>−</span></button>
+    <button class="btn btn-sci"    data-a="sci" data-v="e"><div class="ripple"></div><span>e</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="1"><div class="ripple"></div><span>1</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="2"><div class="ripple"></div><span>2</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="3"><div class="ripple"></div><span>3</span></button>
+    <button class="btn btn-op"     data-a="op" data-v="+"><div class="ripple"></div><span>+</span></button>
+    <button class="btn btn-spec"   data-a="sign"><div class="ripple"></div><span>+/−</span></button>
+    <button class="btn btn-num"    data-a="n"  data-v="0"><div class="ripple"></div><span>0</span></button>
+    <button class="btn btn-spec"   data-a="dot"><div class="ripple"></div><span>.</span></button>
+    <button class="btn btn-eq"     data-a="eq" style="grid-column:span 2"><div class="ripple"></div><span>=</span></button>
+  </div>
+
+  <div class="calc-footer">
+    <span class="footer-l">AXIOM PRIME SERIES</span>
+    <span class="footer-r" id="soundStatus">🔊 SOUND ON</span>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ══════════════ PANELS ══════════════ -->
+
+<!-- HISTORY PANEL -->
+<div class="panel-overlay" id="panelHistory">
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">◈ CALCULATION HISTORY</span>
+      <button class="panel-close" onclick="closePanel('history')">✕</button>
+    </div>
+    <div class="panel-body" id="historyBody">
+      <div class="hist-empty">NO CALCULATIONS YET</div>
+    </div>
+  </div>
+</div>
+
+<!-- HELP PANEL -->
+<div class="panel-overlay" id="panelHelp">
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">◈ HELP & SHORTCUTS</span>
+      <button class="panel-close" onclick="closePanel('help')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="help-section">
+        <div class="help-section-title">⌨ KEYBOARD SHORTCUTS</div>
+        <div class="help-row"><span class="help-key">0–9</span><span class="help-desc">Type numbers directly</span></div>
+        <div class="help-row"><span class="help-key">Enter / =</span><span class="help-desc">Calculate result (equals)</span></div>
+        <div class="help-row"><span class="help-key">Backspace</span><span class="help-desc">Delete last digit</span></div>
+        <div class="help-row"><span class="help-key">Escape</span><span class="help-desc">Clear all (reset calculator)</span></div>
+        <div class="help-row"><span class="help-key">+ − * /</span><span class="help-desc">Arithmetic operators</span></div>
+        <div class="help-row"><span class="help-key">.</span><span class="help-desc">Add decimal point</span></div>
+        <div class="help-row"><span class="help-key">%</span><span class="help-desc">Convert to percentage</span></div>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">🧮 STANDARD MODE</div>
+        <div class="help-row"><span class="help-key">CLR</span><span class="help-desc">Clear display completely</span></div>
+        <div class="help-row"><span class="help-key">⌫</span><span class="help-desc">Backspace — delete last character</span></div>
+        <div class="help-row"><span class="help-key">%</span><span class="help-desc">Divide current number by 100</span></div>
+        <div class="help-row"><span class="help-key">+/−</span><span class="help-desc">Flip positive/negative sign</span></div>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">🔬 SCIENTIFIC MODE</div>
+        <div class="help-row"><span class="help-key">SIN/COS/TAN</span><span class="help-desc">Trigonometry in degrees</span></div>
+        <div class="help-row"><span class="help-key">LOG / LN</span><span class="help-desc">Log base-10 and natural log</span></div>
+        <div class="help-row"><span class="help-key">√</span><span class="help-desc">Square root of current value</span></div>
+        <div class="help-row"><span class="help-key">x² / x³</span><span class="help-desc">Square or cube the number</span></div>
+        <div class="help-row"><span class="help-key">xʸ</span><span class="help-desc">Raise x to the power of y</span></div>
+        <div class="help-row"><span class="help-key">1/x</span><span class="help-desc">Reciprocal (inverse) of number</span></div>
+        <div class="help-row"><span class="help-key">n!</span><span class="help-desc">Factorial (e.g. 5! = 120)</span></div>
+        <div class="help-row"><span class="help-key">|x|</span><span class="help-desc">Absolute value (remove minus)</span></div>
+        <div class="help-row"><span class="help-key">π</span><span class="help-desc">Insert Pi = 3.14159265…</span></div>
+        <div class="help-row"><span class="help-key">e</span><span class="help-desc">Insert Euler's number = 2.71828…</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TIPS PANEL -->
+<div class="panel-overlay" id="panelTips">
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">◈ PRO TIPS & TRICKS</span>
+      <button class="panel-close" onclick="closePanel('tips')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="tip-card tip-gold">
+        <div class="tip-card-head">⚡ CHAIN CALCULATIONS</div>
+        <div class="tip-card-body">Don't press = after each step! Type <b>5 + 3 × 2</b> and AXIOM auto-chains operations. Press = only at the end for the final answer.</div>
+      </div>
+      <div class="tip-card tip-blue">
+        <div class="tip-card-head">🎯 QUICK PERCENTAGE</div>
+        <div class="tip-card-body">Want 18% of 500? Type <b>500 × 18 %</b> — press % after typing 18, it auto-converts! Result: 90. Works for discounts, tax, tips.</div>
+      </div>
+      <div class="tip-card tip-grn">
+        <div class="tip-card-head">🔁 REPEAT LAST OPERATION</div>
+        <div class="tip-card-body">After pressing =, if you press = again, AXIOM repeats the last operation with the same number. Great for multiplying by the same value multiple times!</div>
+      </div>
+      <div class="tip-card tip-red">
+        <div class="tip-card-head">🔬 SCIENTIFIC POWER HACK</div>
+        <div class="tip-card-body">Use <b>xʸ</b> for any power. Type <b>2</b> then <b>xʸ</b> then <b>10</b> then <b>=</b> → You get 1024! Also try <b>e</b> and <b>xʸ</b> for exponential growth.</div>
+      </div>
+      <div class="tip-card tip-blue">
+        <div class="tip-card-head">📐 TRIG IN DEGREES</div>
+        <div class="tip-card-body">All trig functions (SIN, COS, TAN) work in degrees not radians. Type <b>90</b> then press <b>SIN</b> → Result is 1 (sin 90° = 1). Perfect for geometry.</div>
+      </div>
+      <div class="tip-card tip-gold">
+        <div class="tip-card-head">💡 NEGATIVE NUMBER TRICK</div>
+        <div class="tip-card-body">Type any number then press <b>+/−</b> to instantly flip its sign. Works mid-calculation too! Handy for finding differences with negative values.</div>
+      </div>
+      <div class="tip-card tip-grn">
+        <div class="tip-card-head">📋 HISTORY RECALL</div>
+        <div class="tip-card-body">Tap any item in History panel to instantly copy that result back to the calculator. Great for using previous answers in new calculations!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUGGESTIONS PANEL -->
+<div class="panel-overlay" id="panelSuggest">
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">◈ SMART SUGGESTIONS</span>
+      <button class="panel-close" onclick="closePanel('suggest')">✕</button>
+    </div>
+    <div class="panel-body" id="suggestBody">
+      <!-- filled dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT PANEL -->
+<div class="panel-overlay" id="panelAbout">
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">◈ ABOUT AXIOM</span>
+      <button class="panel-close" onclick="closePanel('about')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="about-logo">
+        <div class="about-logo-text">AXIOM</div>
+        <div class="about-sub">PRIME · LUXURY CYBERPUNK CALCULATOR</div>
+      </div>
+      <div class="about-divider"></div>
+      <div class="about-row"><span class="about-label">VERSION</span><span class="about-val">X7 · Build 3.7.1</span></div>
+      <div class="about-row"><span class="about-label">ENGINE</span><span class="about-val">Web Audio API + JS</span></div>
+      <div class="about-row"><span class="about-label">PRECISION</span><span class="about-val">12-digit floating point</span></div>
+      <div class="about-row"><span class="about-label">MODES</span><span class="about-val">Standard + Scientific</span></div>
+      <div class="about-row"><span class="about-label">SOUND</span><span class="about-val">Cinematic synthesized tones</span></div>
+      <div class="about-row"><span class="about-label">RESPONSIVE</span><span class="about-val">Mobile · Tablet · Desktop</span></div>
+      <div class="about-row"><span class="about-label">KEYBOARD</span><span class="about-val">Full keyboard support</span></div>
+      <div class="about-feat">
+        <div class="help-section-title" style="margin-top:14px;">✦ FEATURES</div>
+        <span class="feat-pill">GOLD FRAME</span><span class="feat-pill">SCAN LINE</span><span class="feat-pill">PARTICLES</span>
+        <span class="feat-pill">RIPPLE FX</span><span class="feat-pill">HISTORY</span><span class="feat-pill">SCI MODE</span>
+        <span class="feat-pill">SOUND ENGINE</span><span class="feat-pill">PRO TIPS</span><span class="feat-pill">SMART SUGGEST</span>
+        <span class="feat-pill">RESPONSIVE</span><span class="feat-pill">CINZEL FONT</span><span class="feat-pill">GLOW FX</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── PARTICLES ── */
+const pc=document.getElementById('particles');
+const pC=['#00d4ff','#9b30ff','#ffd700','#00ff9d','#ff3366'];
+for(let i=0;i<35;i++){const p=document.createElement('div');p.className='p';p.style.cssText=`left:${Math.random()*100}%;background:${pC[i%5]};box-shadow:0 0 4px ${pC[i%5]};animation-duration:${7+Math.random()*14}s;animation-delay:${Math.random()*12}s`;pc.appendChild(p);}
+
+/* ── SOUND ENGINE — CINEMATIC ── */
+let AC=null, soundOn=true;
+function getAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC;}
+
+/* Reverb impulse */
+function makeReverb(ctx,dur=0.4,decay=2){
+  const sr=ctx.sampleRate, len=sr*dur;
+  const buf=ctx.createBuffer(2,len,sr);
+  for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);}
+  const conv=ctx.createConvolver();conv.buffer=buf;return conv;
+}
+
+function playTone(freq,type,vol,dur,freqEnd,ctx,dest){
+  const osc=ctx.createOscillator(),g=ctx.createGain();
+  osc.type=type;
+  const n=ctx.currentTime;
+  osc.frequency.setValueAtTime(freq,n);
+  if(freqEnd)osc.frequency.exponentialRampToValueAtTime(freqEnd,n+dur*.7);
+  g.gain.setValueAtTime(vol,n);
+  g.gain.exponentialRampToValueAtTime(0.0001,n+dur);
+  osc.connect(g);g.connect(dest);
+  osc.start(n);osc.stop(n+dur+.05);
+}
+
+function playSound(type){
+  if(!soundOn)return;
+  try{
+    const ctx=getAC();
+    const rev=makeReverb(ctx,.35,3);
+    const masterGain=ctx.createGain();
+    masterGain.gain.value=0.7;
+    rev.connect(masterGain);masterGain.connect(ctx.destination);
+    const dry=ctx.createGain();dry.gain.value=1;dry.connect(ctx.destination);
+    const n=ctx.currentTime;
+
+    if(type==='num'){
+      /* Soft glassy ping — like a crystal tap */
+      playTone(1200,'sine',.04,.12,900,ctx,dry);
+      playTone(2400,'sine',.015,.08,0,ctx,rev);
+    }
+    else if(type==='op'){
+      /* Metallic shimmer — two-tone chime */
+      playTone(660,'triangle',.06,.15,880,ctx,dry);
+      playTone(1320,'sine',.02,.1,0,ctx,rev);
+    }
+    else if(type==='eq'){
+      /* Victory fanfare — ascending 4-note chord */
+      const notes=[523,659,784,1047];
+      notes.forEach((f,i)=>{
+        const o=ctx.createOscillator(),g=ctx.createGain(),t=n+i*.055;
+        o.type=i%2===0?'sine':'triangle';
+        o.frequency.setValueAtTime(f,t);
+        o.frequency.exponentialRampToValueAtTime(f*1.02,t+.2);
+        g.gain.setValueAtTime(.09,t);
+        g.gain.exponentialRampToValueAtTime(.0001,t+.35);
+        o.connect(g);
+        g.connect(dry);
+        const gr=ctx.createGain();gr.gain.value=.4;
+        g.connect(gr);gr.connect(rev);
+        o.start(t);o.stop(t+.4);
+      });
+    }
+    else if(type==='clear'){
+      /* Power-down sweep — descending whoosh */
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sawtooth';
+      o.frequency.setValueAtTime(400,n);
+      o.frequency.exponentialRampToValueAtTime(60,n+.22);
+      g.gain.setValueAtTime(.07,n);g.gain.exponentialRampToValueAtTime(.0001,n+.22);
+      o.connect(g);g.connect(dry);
+      // add noise tail
+      const buf=ctx.createBuffer(1,ctx.sampleRate*.1,ctx.sampleRate);
+      const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+      const src=ctx.createBufferSource(),ng=ctx.createGain();
+      src.buffer=buf;ng.gain.setValueAtTime(.03,n);ng.gain.exponentialRampToValueAtTime(.0001,n+.1);
+      src.connect(ng);ng.connect(rev);src.start(n);
+      o.start(n);o.stop(n+.25);
+    }
+    else if(type==='err'){
+      /* Harsh buzzer — sci-fi error alarm */
+      [180,200,160].forEach((f,i)=>{
+        const o=ctx.createOscillator(),g=ctx.createGain(),t=n+i*.08;
+        o.type='square';
+        o.frequency.setValueAtTime(f,t);
+        g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.0001,t+.1);
+        o.connect(g);g.connect(dry);o.start(t);o.stop(t+.12);
+      });
+    }
+    else if(type==='back'){
+      /* Short soft thud */
+      playTone(300,'sine',.045,.1,150,ctx,dry);
+    }
+    else if(type==='sci'){
+      /* Futuristic laser ping — high-freq sweep */
+      playTone(1800,'sine',.035,.14,400,ctx,dry);
+      playTone(3600,'sine',.012,.08,1800,ctx,rev);
+    }
+    else if(type==='open'){
+      /* Menu open — soft whoosh up */
+      playTone(400,'sine',.03,.1,700,ctx,dry);
+    }
+    else if(type==='copy'){
+      /* Copy confirm — double ping */
+      playTone(880,'sine',.04,.08,0,ctx,dry);
+      setTimeout(()=>playTone(1100,'sine',.04,.08,0,ctx,dry),90);
+    }
+  }catch(e){}
+}
+
+/* ── MENU ── */
+let menuOpen=false;
+function toggleMenu(){
+  menuOpen=!menuOpen;
+  document.getElementById('dropdown').classList.toggle('open',menuOpen);
+  document.getElementById('menuBtn').classList.toggle('open',menuOpen);
+  if(menuOpen)playSound('open');
+}
+document.addEventListener('click',e=>{if(menuOpen&&!e.target.closest('[style*="position:relative"]')&&!e.target.closest('.dropdown')){menuOpen=false;document.getElementById('dropdown').classList.remove('open');document.getElementById('menuBtn').classList.remove('open');}});
+
+/* ── PANELS ── */
+function openPanel(name){
+  menuOpen=false;document.getElementById('dropdown').classList.remove('open');document.getElementById('menuBtn').classList.remove('open');
+  if(name==='history')renderHistory();
+  if(name==='suggest')renderSuggestions();
+  document.getElementById('panel'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('open');
+  playSound('open');
+}
+function closePanel(name){document.getElementById('panel'+name.charAt(0).toUpperCase()+name.slice(1)).classList.remove('open');}
+// close on overlay click
+document.querySelectorAll('.panel-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+/* ── SOUND TOGGLE ── */
+function toggleSound(){
+  soundOn=!soundOn;
+  document.getElementById('soundPill').classList.toggle('on',soundOn);
+  document.getElementById('soundStatus').textContent=soundOn?'🔊 SOUND ON':'🔇 SOUND OFF';
+  if(soundOn)playSound('open');
+}
+
+/* ── TOAST ── */
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+/* ── CALC ENGINE ── */
+let cur='0',prev='',op=null,reset=false,calcHistory=[];
+const valText=document.getElementById('valText'),mainVal=document.getElementById('mainVal');
+const exprLine=document.getElementById('exprLine'),histLine=document.getElementById('histLine');
+
+const fmt=n=>{const f=parseFloat(n);if(isNaN(f))return n;if(Math.abs(f)>=1e13)return f.toExponential(5);return parseFloat(f.toPrecision(12)).toString();};
+const setDisp=(v,anim)=>{
+  valText.textContent=v;mainVal.classList.remove('long','very-long','anim-result','anim-err');
+  if(v.length>11)mainVal.classList.add('very-long');else if(v.length>7)mainVal.classList.add('long');
+  if(anim==='result'){void mainVal.offsetWidth;mainVal.classList.add('anim-result');}
+  if(anim==='err'){void mainVal.offsetWidth;mainVal.classList.add('anim-err');}
+};
+
+function pushHist(entry){
+  calcHistory.unshift({expr:entry,time:new Date().toLocaleTimeString()});
+  if(calcHistory.length>50)calcHistory.pop();
+  histLine.textContent=calcHistory.length>1?calcHistory[1].expr:'\u00a0';
+  document.getElementById('histBadge').textContent=calcHistory.length;
+}
+
+function doNum(d){if(reset){cur=d;reset=false;}else cur=(cur==='0'&&d!=='.')?d:(cur.length<15?cur+d:cur);setDisp(cur);}
+function doDot(){if(reset){cur='0.';reset=false;}else if(!cur.includes('.'))cur+='.';setDisp(cur);}
+function doOp(o){if(op&&!reset)doCalc(false);prev=cur;op=o;reset=true;exprLine.textContent=fmt(prev)+' '+o;}
+function doCalc(final=true){
+  if(!op||prev==='')return;
+  const a=parseFloat(prev),b=parseFloat(cur);let r;
+  switch(op){case'+':r=a+b;break;case'−':r=a-b;break;case'×':r=a*b;break;case'^':r=Math.pow(a,b);break;
+    case'÷':if(b===0){exprLine.textContent='— UNDEFINED —';cur='ERR';op=null;prev='';reset=true;setDisp('ERROR','err');playSound('err');return;}r=a/b;break;}
+  const rs=fmt(r.toString());
+  if(final){const e=fmt(prev)+' '+op+' '+fmt(cur)+' = '+rs;pushHist(e);exprLine.textContent=e;cur=rs;op=null;prev='';reset=true;setDisp(rs,'result');}
+  else cur=rs;
+}
+function doSci(fn){
+  const x=parseFloat(cur);let r;const deg=x*(Math.PI/180);
+  switch(fn){case'sin':r=Math.sin(deg);break;case'cos':r=Math.cos(deg);break;case'tan':r=Math.tan(deg);break;
+    case'log':r=Math.log10(x);break;case'ln':r=Math.log(x);break;case'sqrt':r=Math.sqrt(x);break;
+    case'sq':r=x*x;break;case'cube':r=x*x*x;break;case'inv':r=1/x;break;
+    case'pi':cur=Math.PI.toString();setDisp(cur);return;case'e':cur=Math.E.toString();setDisp(cur);return;
+    case'abs':r=Math.abs(x);break;
+    case'fact':if(x<0||!Number.isInteger(x)){r=NaN;break;}r=1;for(let i=2;i<=x;i++)r*=i;break;}
+  if(isNaN(r)||!isFinite(r)){setDisp('ERROR','err');playSound('err');cur='0';reset=true;return;}
+  const e=fn.toUpperCase()+'('+fmt(cur)+') = '+fmt(r.toString());pushHist(e);exprLine.textContent=e;cur=fmt(r.toString());reset=true;setDisp(cur,'result');
+}
+function doClear(){cur='0';prev='';op=null;reset=false;exprLine.innerHTML='&nbsp;';histLine.innerHTML='&nbsp;';setDisp('0');}
+function doBack(){if(reset||cur==='ERR'){cur='0';setDisp(cur);return;}cur=cur.length>1?cur.slice(0,-1):'0';setDisp(cur);}
+
+/* History render */
+function renderHistory(){
+  const b=document.getElementById('historyBody');
+  if(calcHistory.length===0){b.innerHTML='<div class="hist-empty">NO CALCULATIONS YET<br><br>Start calculating to build your history!</div>';return;}
+  b.innerHTML=calcHistory.map((h,i)=>`<div class="hist-item" onclick="recallHist(${i})"><div><div style="font-size:11px;color:rgba(0,207,255,.4);margin-bottom:2px;">${h.time}</div><div>${h.expr.split('=')[0].trim()}</div></div><div class="h-eq">${h.expr.split('=').pop().trim()}</div></div>`).join('')
+    +'<button class="hist-clear-btn" onclick="clearHist()">◈ CLEAR ALL HISTORY</button>';
+}
+function recallHist(i){
+  const res=calcHistory[i].expr.split('=').pop().trim();
+  cur=res;reset=false;setDisp(cur);
+  closePanel('history');playSound('copy');showToast('✦ VALUE RECALLED');
+}
+function clearHist(){calcHistory=[];document.getElementById('histBadge').textContent='0';renderHistory();showToast('◈ HISTORY CLEARED');}
+
+/* Smart Suggestions render */
+const SUGGESTIONS=[
+  {tag:'QUICK CONVERT',text:'Convert percentage to decimal:',val:'Type value then press %'},
+  {tag:'POWER TIP',text:'Square any number instantly:',val:'Switch to SCI → type number → x²'},
+  {tag:'GOLDEN RATIO',text:'Famous golden ratio constant:',val:'1.618033988'},
+  {tag:'SPEED OF LIGHT',text:'Speed of light (m/s):',val:'299792458'},
+  {tag:'AVOGADRO',text:"Avogadro's number:",val:'6.02214076e+23'},
+  {tag:'CIRCLE AREA',text:'Area of circle (r=10):',val:'π × 10 × 10 = 314.159'},
+  {tag:'COMPOUND INTEREST',text:'Compound: 1000 × (1+0.08)^10 =',val:'2158.925'},
+  {tag:'PYTHAGOREAN',text:'Hypotenuse (3,4 triangle):',val:'√(3²+4²) = 5'},
+  {tag:'BINARY TIP',text:'Powers of 2 (use xʸ):',val:'2^8=256  2^16=65536  2^32=4B'},
+  {tag:'TAX TRICK',text:'Add 18% GST to any number:',val:'num × 1.18 = total with GST'},
+];
+function renderSuggestions(){
+  document.getElementById('suggestBody').innerHTML=SUGGESTIONS.map(s=>`<div class="suggest-card"><div class="suggest-tag">${s.tag}</div><div class="suggest-text">${s.text}</div><div class="suggest-val" onclick="useSuggestion('${s.val}')">${s.val}</div></div>`).join('');
+}
+function useSuggestion(v){
+  const num=v.match(/[\d.]+/);
+  if(num){cur=num[0];setDisp(cur);closePanel('suggest');showToast('✦ VALUE LOADED');playSound('copy');}
+  else{closePanel('suggest');showToast('◈ TRY THIS IN CALCULATOR!');}
+}
+
+/* Mode switch */
+function switchMode(m){
+  const std=document.getElementById('stdButtons'),sci=document.getElementById('sciButtons');
+  const tS=document.getElementById('tabStd'),tC=document.getElementById('tabSci');
+  if(m==='sci'){std.style.display='none';sci.style.display='grid';tS.classList.remove('active');tC.classList.add('active');document.getElementById('modeLabel').textContent='SCI';}
+  else{sci.style.display='none';std.style.display='grid';tC.classList.remove('active');tS.classList.add('active');document.getElementById('modeLabel').textContent='STD';}
+  doClear();playSound('open');
+}
+
+/* Button events */
+document.querySelectorAll('.btn').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    const a=btn.dataset.a,v=btn.dataset.v;
+    const rect=btn.getBoundingClientRect();
+    btn.querySelector('.ripple').style.setProperty('--rx',((e.clientX-rect.left)/rect.width*100)+'%');
+    btn.querySelector('.ripple').style.setProperty('--ry',((e.clientY-rect.top)/rect.height*100)+'%');
+    if(a==='n'){doNum(v);playSound('num');}
+    else if(a==='op'){doOp(v);playSound('op');}
+    else if(a==='eq'){doCalc(true);playSound('eq');}
+    else if(a==='clear'){doClear();playSound('clear');}
+    else if(a==='back'){doBack();playSound('back');}
+    else if(a==='dot'){doDot();playSound('num');}
+    else if(a==='sign'){if(cur!=='ERR'){cur=(parseFloat(cur)*-1).toString();setDisp(cur);playSound('num');}}
+    else if(a==='pct'){if(cur!=='ERR'){cur=(parseFloat(cur)/100).toString();setDisp(cur);playSound('sci');}}
+    else if(a==='sci'){doSci(v);playSound('sci');}
+  });
+});
+
+/* Keyboard */
+document.addEventListener('keydown',e=>{
+  if(e.key>='0'&&e.key<='9'){doNum(e.key);playSound('num');}
+  else if(e.key==='.'){doDot();playSound('num');}
+  else if(e.key==='+'){doOp('+');playSound('op');}
+  else if(e.key==='-'){doOp('−');playSound('op');}
+  else if(e.key==='*'){doOp('×');playSound('op');}
+  else if(e.key==='/'){e.preventDefault();doOp('÷');playSound('op');}
+  else if(e.key==='Enter'||e.key==='='){doCalc(true);playSound('eq');}
+  else if(e.key==='Escape'){doClear();playSound('clear');}
+  else if(e.key==='Backspace'){doBack();playSound('back');}
+  else if(e.key==='%'){if(cur!=='ERR'){cur=(parseFloat(cur)/100).toString();setDisp(cur);}}
+});
+</script>
+</body>
+</html>
